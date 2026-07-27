@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f7f7f5" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="轻记账" />
+  <meta name="format-detection" content="telephone=no" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+  <title>轻记账</title>
+  <style>
+    :root{
+      --bg:#f7f7f5; --card:#ffffff; --text:#171717; --muted:#777773;
+      --line:#e8e8e4; --accent:#1f7a5a; --accent-soft:#e7f3ed; --danger:#b44343;
+      --shadow:0 8px 30px rgba(0,0,0,.06); --radius:22px;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif}
+    body{display:flex;justify-content:center}
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    .app{width:100%;max-width:480px;min-height:100vh;padding:calc(18px + env(safe-area-inset-top)) 18px calc(92px + env(safe-area-inset-bottom));position:relative}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    .brand{font-size:22px;font-weight:750;letter-spacing:-.5px}
+    .month-btn{border:0;background:transparent;color:var(--muted);font-weight:650;padding:8px 0}
+    .hero{background:linear-gradient(145deg,#1f7a5a,#2f8e6b);color:#fff;border-radius:28px;padding:24px;box-shadow:var(--shadow);margin-bottom:16px}
+    .hero-label{font-size:13px;opacity:.78}
+    .hero-value{font-size:39px;font-weight:780;letter-spacing:-1.5px;margin:7px 0 18px}
+    .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .hero-mini{background:rgba(255,255,255,.12);border-radius:16px;padding:13px}
+    .hero-mini span{display:block;font-size:12px;opacity:.75;margin-bottom:4px}
+    .hero-mini b{font-size:17px}
+    .budget-track{height:7px;background:rgba(255,255,255,.2);border-radius:99px;overflow:hidden;margin-top:16px}
+    .budget-fill{height:100%;background:#fff;border-radius:99px;width:0%;transition:.25s}
+    .section{background:var(--card);border:1px solid rgba(0,0,0,.025);border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.025)}
+    .section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+    .section-title h2{font-size:16px;margin:0}
+    .section-title button{border:0;background:transparent;color:var(--accent);font-size:13px;font-weight:650}
+    .amount-wrap{display:flex;align-items:center;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}
+    .currency-sign{font-size:29px;font-weight:700;margin-right:8px;color:var(--muted)}
+    #amount{width:100%;border:0;outline:0;background:transparent;font-size:36px;font-weight:750;letter-spacing:-1px;min-width:0}
+    #amount::placeholder{color:#c7c7c2}
+    .categories{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:14px}
+    .cat{border:1px solid var(--line);background:#fff;border-radius:15px;padding:10px 4px 9px;color:var(--text);font-size:12px;display:flex;flex-direction:column;gap:4px;align-items:center}
+    .cat .emoji{font-size:22px;line-height:1}
+    .cat.active{background:var(--accent-soft);border-color:#b8dccc;color:#145a41;font-weight:700}
+    .row{display:flex;gap:10px}
+    .field{flex:1;border:1px solid var(--line);border-radius:14px;background:#fafaf8;padding:12px 13px;outline:0;min-width:0}
+    .save{width:100%;border:0;border-radius:16px;background:var(--text);color:#fff;padding:14px;font-weight:700;margin-top:12px}
+    .save:active{transform:scale(.99)}
+    .empty{padding:24px 10px;text-align:center;color:var(--muted);font-size:14px}
+    .tx{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+    .tx:last-child{border-bottom:0}
+    .tx-icon{width:42px;height:42px;border-radius:14px;background:#f1f1ee;display:grid;place-items:center;font-size:21px;margin-right:12px}
+    .tx-main{flex:1;min-width:0}
+    .tx-title{font-weight:650;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .tx-sub{font-size:12px;color:var(--muted);margin-top:4px}
+    .tx-amount{font-weight:700;font-variant-numeric:tabular-nums}
+    .tx-delete{border:0;background:transparent;color:#b7b7b1;padding:8px 0 8px 10px;font-size:16px}
+    .day-group{margin-bottom:16px}
+    .day-head{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin:0 2px 4px}
+    .chart-row{margin:15px 0}
+    .chart-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px}
+    .bar{height:9px;background:#ededE9;border-radius:99px;overflow:hidden}
+    .bar > div{height:100%;background:var(--accent);border-radius:99px}
+    .settings-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line)}
+    .settings-row:last-child{border-bottom:0}
+    .settings-label b{display:block;font-size:14px}
+    .settings-label span{font-size:12px;color:var(--muted)}
+    .small-input{width:118px;border:1px solid var(--line);border-radius:12px;padding:9px 10px;background:#fafaf8;text-align:right}
+    .ghost{border:1px solid var(--line);background:#fff;border-radius:13px;padding:10px 13px;font-weight:650}
+    .danger{color:var(--danger)}
+    .nav{position:fixed;z-index:10;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(255,255,255,.92);backdrop-filter:blur(18px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:8px 8px calc(8px + env(safe-area-inset-bottom))}
+    .nav button{border:0;background:transparent;color:#97978f;padding:7px 0 3px;font-size:11px;display:flex;flex-direction:column;gap:3px;align-items:center}
+    .nav .ico{font-size:21px;line-height:1}
+    .nav button.active{color:var(--accent);font-weight:700}
+    .page{display:none}
+    .page.active{display:block}
+    .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%) translateY(20px);background:#202020;color:#fff;padding:10px 16px;border-radius:99px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:30;white-space:nowrap}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .stats-number{font-size:30px;font-weight:760;margin:4px 0 2px}
+    .muted{color:var(--muted);font-size:13px}
+    .filter-row{display:flex;gap:8px;overflow:auto;margin-bottom:12px;padding-bottom:2px}
+    .filter{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:99px;padding:8px 12px;font-size:12px}
+    .filter.active{background:var(--text);color:#fff;border-color:var(--text)}
+    @media (max-width:360px){.categories{grid-template-columns:repeat(4,1fr);gap:6px}.cat{font-size:11px;padding-left:1px;padding-right:1px}.hero-value{font-size:34px}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="topbar">
+      <div class="brand">轻记账</div>
+      <button class="month-btn" id="monthLabel"></button>
+    </div>
+
+    <section id="page-home" class="page active">
+      <div class="hero">
+        <div class="hero-label">本月已花</div>
+        <div class="hero-value" id="monthTotal">$0.00</div>
+        <div class="hero-grid">
+          <div class="hero-mini"><span>今天</span><b id="todayTotal">$0.00</b></div>
+          <div class="hero-mini"><span>日均</span><b id="dailyAvg">$0.00</b></div>
+        </div>
+        <div class="budget-track"><div class="budget-fill" id="budgetFill"></div></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><h2>记一笔</h2><button id="todayBtn">今天</button></div>
+        <div class="amount-wrap"><span class="currency-sign" id="currencySign">$</span><input id="amount" type="number" inputmode="decimal" step="0.01" placeholder="0.00" /></div>
+        <div class="categories" id="categories"></div>
+        <div class="row">
+          <input id="note" class="field" placeholder="备注（可选）" maxlength="30" />
+          <input id="date" class="field" type="date" />
+        </div>
+        <button class="save" id="saveBtn">保存</button>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><h2>最近记录</h2><button data-go="records">查看全部</button></div>
+        <div id="recentList"></div>
+      </div>
+    </section>
+
+    <section id="page-records" class="page">
+      <div class="section">
+        <div class="section-title"><h2>消费明细</h2><button id="exportQuick">导出</button></div>
+        <div class="filter-row" id="filters"></div>
+        <div id="recordList"></div>
+      </div>
+    </section>
+
+    <section id="page-stats" class="page">
+      <div class="section">
+        <div class="muted">本月消费</div>
+        <div class="stats-number" id="statsTotal">$0.00</div>
+        <div class="muted" id="statsCount">共 0 笔</div>
+      </div>
+      <div class="section">
+        <div class="section-title"><h2>分类占比</h2></div>
+        <div id="chart"></div>
+      </div>
+    </section>
+
+    <section id="page-settings" class="page">
+      <div class="section">
+        <div class="section-title"><h2>设置</h2></div>
+        <div class="settings-row">
+          <div class="settings-label"><b>币种</b><span>显示金额符号</span></div>
+          <select id="currency" class="small-input"><option value="USD">USD ($)</option><option value="CNY">CNY (¥)</option></select>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label"><b>月预算</b><span>仅用于进度提醒</span></div>
+          <input id="budget" class="small-input" type="number" inputmode="decimal" min="0" step="100" placeholder="3000" />
+        </div>
+        <div class="settings-row">
+          <div class="settings-label"><b>导出数据</b><span>保存为 JSON 文件</span></div>
+          <button class="ghost" id="exportBtn">导出</button>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label"><b>导入数据</b><span>从备份文件恢复</span></div>
+          <button class="ghost" id="importBtn">导入</button>
+          <input id="importFile" type="file" accept="application/json" hidden />
+        </div>
+        <div class="settings-row">
+          <div class="settings-label"><b class="danger">清空全部记录</b><span>此操作不可撤销</span></div>
+          <button class="ghost danger" id="clearBtn">清空</button>
+        </div>
+      </div>
+      <div class="section muted">所有数据仅保存在当前浏览器中，不会上传到服务器。建议定期导出备份。</div>
+    </section>
+  </main>
+
+  <nav class="nav">
+    <button class="active" data-page="home"><span class="ico">＋</span><span>记账</span></button>
+    <button data-page="records"><span class="ico">☷</span><span>明细</span></button>
+    <button data-page="stats"><span class="ico">◔</span><span>统计</span></button>
+    <button data-page="settings"><span class="ico">⚙</span><span>设置</span></button>
+  </nav>
+  <div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const CATS = [
+    {id:'food', name:'餐饮', emoji:'🍜'}, {id:'transport', name:'交通', emoji:'🚇'},
+    {id:'shopping', name:'购物', emoji:'🛍️'}, {id:'home', name:'住房', emoji:'🏠'},
+    {id:'pet', name:'宠物', emoji:'🐶'}, {id:'fun', name:'娱乐', emoji:'🎬'},
+    {id:'health', name:'健康', emoji:'💊'}, {id:'other', name:'其他', emoji:'•••'}
+  ];
+  const storeKey = 'light-ledger-v1';
+  const defaultState = { transactions: [], currency:'USD', budget:3000 };
+  let state = load();
+  let selectedCat = 'food';
+  let activeFilter = 'all';
+
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+  const today = () => new Date().toLocaleDateString('en-CA');
+  const currentMonth = () => today().slice(0,7);
+  $('#date').value = today();
+
+  function load(){
+    try { return {...defaultState, ...JSON.parse(localStorage.getItem(storeKey) || '{}')}; }
+    catch { return {...defaultState}; }
+  }
+  function persist(){ localStorage.setItem(storeKey, JSON.stringify(state)); }
+  function currencySymbol(){ return state.currency === 'CNY' ? '¥' : '$'; }
+  function money(n){
+    return new Intl.NumberFormat(state.currency === 'CNY' ? 'zh-CN' : 'en-US', {style:'currency', currency:state.currency}).format(Number(n)||0);
+  }
+  function monthName(){
+    const d = new Date(currentMonth()+'-01T12:00:00');
+    return d.toLocaleDateString('zh-CN',{year:'numeric',month:'long'});
+  }
+  function monthTx(){ return state.transactions.filter(t => t.date.startsWith(currentMonth())); }
+  function sum(arr){ return arr.reduce((a,t)=>a+Number(t.amount),0); }
+  function catOf(id){ return CATS.find(c=>c.id===id) || CATS.at(-1); }
+  function escapeHtml(s=''){ return s.replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c])); }
+  function toast(msg){ const el=$('#toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(window.__toast); window.__toast=setTimeout(()=>el.classList.remove('show'),1600); }
+
+  function renderCategories(){
+    $('#categories').innerHTML = CATS.map(c=>`<button class="cat ${c.id===selectedCat?'active':''}" data-cat="${c.id}"><span class="emoji">${c.emoji}</span><span>${c.name}</span></button>`).join('');
+    $$('.cat').forEach(b=>b.onclick=()=>{selectedCat=b.dataset.cat;renderCategories();});
+  }
+
+  function txHtml(t, deletable=true){
+    const c=catOf(t.category);
+    return `<div class="tx"><div class="tx-icon">${c.emoji}</div><div class="tx-main"><div class="tx-title">${escapeHtml(t.note || c.name)}</div><div class="tx-sub">${c.name} · ${t.date}</div></div><div class="tx-amount">-${money(t.amount)}</div>${deletable?`<button class="tx-delete" data-delete="${t.id}" aria-label="删除">×</button>`:''}</div>`;
+  }
+
+  function renderHome(){
+    const mtx=monthTx(); const mTotal=sum(mtx); const tTotal=sum(state.transactions.filter(t=>t.date===today()));
+    const dayNum=Math.max(1,new Date().getDate());
+    $('#monthLabel').textContent=monthName();
+    $('#monthTotal').textContent=money(mTotal); $('#todayTotal').textContent=money(tTotal); $('#dailyAvg').textContent=money(mTotal/dayNum);
+    $('#currencySign').textContent=currencySymbol();
+    $('#budgetFill').style.width=Math.min(100, state.budget>0 ? mTotal/state.budget*100 : 0)+'%';
+    const latest=[...state.transactions].sort((a,b)=>(b.date+b.createdAt).localeCompare(a.date+a.createdAt)).slice(0,4);
+    $('#recentList').innerHTML=latest.length?latest.map(t=>txHtml(t)).join(''):'<div class="empty">还没有记录。今天从第一笔开始吧。</div>';
+    bindDeletes();
+  }
+
+  function renderFilters(){
+    const items=[{id:'all',name:'全部'},...CATS];
+    $('#filters').innerHTML=items.map(c=>`<button class="filter ${activeFilter===c.id?'active':''}" data-filter="${c.id}">${c.emoji||''} ${c.name}</button>`).join('');
+    $$('.filter').forEach(b=>b.onclick=()=>{activeFilter=b.dataset.filter;renderRecords();});
+  }
+
+  function renderRecords(){
+    renderFilters();
+    let items=[...state.transactions].sort((a,b)=>(b.date+b.createdAt).localeCompare(a.date+a.createdAt));
+    if(activeFilter!=='all') items=items.filter(t=>t.category===activeFilter);
+    if(!items.length){ $('#recordList').innerHTML='<div class="empty">这个分类还没有记录。</div>'; return; }
+    const groups=items.reduce((acc,t)=>((acc[t.date]??=[]).push(t),acc),{});
+    $('#recordList').innerHTML=Object.entries(groups).map(([date,txs])=>`<div class="day-group"><div class="day-head"><span>${date===today()?'今天':date}</span><span>${money(sum(txs))}</span></div>${txs.map(t=>txHtml(t)).join('')}</div>`).join('');
+    bindDeletes();
+  }
+
+  function renderStats(){
+    const txs=monthTx(); const total=sum(txs);
+    $('#statsTotal').textContent=money(total); $('#statsCount').textContent=`共 ${txs.length} 笔`;
+    if(!txs.length){ $('#chart').innerHTML='<div class="empty">记几笔后，这里会显示分类占比。</div>'; return; }
+    const data=CATS.map(c=>({c,value:sum(txs.filter(t=>t.category===c.id))})).filter(x=>x.value>0).sort((a,b)=>b.value-a.value);
+    $('#chart').innerHTML=data.map(({c,value})=>`<div class="chart-row"><div class="chart-head"><span>${c.emoji} ${c.name}</span><b>${money(value)} · ${Math.round(value/total*100)}%</b></div><div class="bar"><div style="width:${value/total*100}%"></div></div></div>`).join('');
+  }
+
+  function renderSettings(){ $('#currency').value=state.currency; $('#budget').value=state.budget || ''; }
+  function renderAll(){ renderCategories(); renderHome(); renderRecords(); renderStats(); renderSettings(); }
+  function bindDeletes(){
+    $$('[data-delete]').forEach(b=>b.onclick=()=>{ const id=b.dataset.delete; state.transactions=state.transactions.filter(t=>t.id!==id); persist();renderAll();toast('已删除'); });
+  }
+
+  $('#saveBtn').onclick=()=>{
+    const amount=Number($('#amount').value);
+    if(!amount || amount<=0){ toast('请输入正确金额'); $('#amount').focus(); return; }
+    state.transactions.push({id:crypto.randomUUID?crypto.randomUUID():Date.now().toString(), amount:Number(amount.toFixed(2)), category:selectedCat, note:$('#note').value.trim(), date:$('#date').value||today(), createdAt:new Date().toISOString()});
+    persist(); $('#amount').value=''; $('#note').value=''; $('#date').value=today(); selectedCat='food'; renderAll(); toast('已记一笔');
+  };
+  $('#todayBtn').onclick=()=>{$('#date').value=today();toast('日期已设为今天');};
+  $('#currency').onchange=e=>{state.currency=e.target.value;persist();renderAll();};
+  $('#budget').onchange=e=>{state.budget=Math.max(0,Number(e.target.value)||0);persist();renderAll();};
+  $('#clearBtn').onclick=()=>{if(confirm('确定清空全部记录吗？')){state.transactions=[];persist();renderAll();toast('已清空');}};
+
+  function exportData(){
+    const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`轻记账备份-${today()}.json`; a.click(); URL.revokeObjectURL(url); toast('备份已导出');
+  }
+  $('#exportBtn').onclick=exportData; $('#exportQuick').onclick=exportData;
+  $('#importBtn').onclick=()=>$('#importFile').click();
+  $('#importFile').onchange=async e=>{
+    const file=e.target.files[0]; if(!file)return;
+    try{const data=JSON.parse(await file.text()); if(!Array.isArray(data.transactions)) throw new Error(); state={...defaultState,...data}; persist();renderAll();toast('数据已导入');}
+    catch{alert('无法读取这个备份文件。');}
+    e.target.value='';
+  };
+
+  function go(page){
+    $$('.page').forEach(p=>p.classList.toggle('active',p.id===`page-${page}`));
+    $$('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
+    window.scrollTo({top:0,behavior:'smooth'}); if(page==='stats')renderStats(); if(page==='records')renderRecords();
+  }
+  $$('.nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));
+  $$('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+  $('#amount').addEventListener('keydown',e=>{if(e.key==='Enter')$('#saveBtn').click();});
+
+  renderAll();
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(() => {}));
+}
+</script>
+</body>
+</html>
